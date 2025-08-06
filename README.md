@@ -1,1 +1,1 @@
-# tuto01ArqSoft
+# djangoTutorials
