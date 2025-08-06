@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django import forms
 from django.views import View
 from django.views.generic import TemplateView
 from django.http import HttpResponseRedirect
@@ -66,3 +67,37 @@ class productShowView(View):
             "product": product_data
         }
         return render(request, self.template_name, viewData)
+    
+class ProductForm(forms.Form):
+    name = forms.CharField(required=True)
+    price = forms.FloatField(required=True)
+
+    def clean_price(self):
+        price = self.cleaned_data.get('price')
+        if price is not None and price <= 0:
+            raise forms.ValidationError("El precio debe ser mayor que cero")
+        return price
+ 
+class ProductCreateView(View):
+    template_name = 'products/create.html'
+    
+    def get(self, request):
+        form = ProductForm()
+        viewData = {}
+        viewData["title"] = "Create product"
+        viewData["form"] = form
+        return render(request, self.template_name, viewData)
+    
+    def post(self, request):
+        form = ProductForm(request.POST)
+        if form.is_valid("success"):
+
+            return redirect(form)
+        else:
+            viewData = {}
+            viewData["title"] = "Create product"
+            viewData["form"] = form
+            return render(request, self.template_name, viewData)
+        
+class ProductSuccessView(TemplateView):
+    template_name = "products/success.html"
