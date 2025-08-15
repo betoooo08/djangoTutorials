@@ -115,3 +115,42 @@ class ProductListView(ListView):
     
 class ProductSuccessView(TemplateView):
     template_name = "products/success.html"
+    
+# views.py (fragmento corregido)
+class CartView(View):
+    template_name = 'cart/index.html'
+
+    def get(self, request):
+        # Simulated database for products
+        products = {
+            121: {'name': 'Tv samsung', 'price': '1000'},
+            11: {'name': 'Iphone', 'price': '2000'},
+        }
+
+        # Get cart products from session
+        cart_product_data = request.session.get('cart_product_data', {})
+        cart_products = {}
+        for key, product in products.items():
+            if str(key) in cart_product_data.keys():
+                cart_products[key] = product
+
+        view_data = {
+            'title': 'Cart - Online Store',
+            'subtitle': 'Shopping Cart',
+            'products': products,
+            'cart_products': cart_products,
+        }
+        return render(request, self.template_name, view_data)
+
+    def post(self, request, product_id):
+        # Add product to cart in session
+        cart_product_data = request.session.get('cart_product_data', {})
+        cart_product_data[str(product_id)] = str(product_id)
+        request.session['cart_product_data'] = cart_product_data
+        return redirect('cart_index')
+
+
+class CartRemoveAllView(View):
+    def post(self, request):
+        request.session.pop('cart_product_data', None)
+        return redirect('cart_index')
